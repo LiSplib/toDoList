@@ -1,9 +1,9 @@
 const $postsList = document.getElementById('postsList');
 
-
-
 function updateView(){
-    fetch('http://localhost:3000/api/v1/todos/')    
+    fetch('http://localhost:3000/api/v1/todos/', {
+        method: 'GET'
+    })    
     .then(res => res.json())
     .then(data => listToDos(data))
     .catch(err => handleError(err));
@@ -25,10 +25,16 @@ function readToDoPosts(data){
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">${toDo.title}</h5>
-                    <span>${toDo.done}</span>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                        <label class="form-check-label" for="defaultCheck1">
+                            ${toDo.done}
+                        </label>
+                    </div>
                     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">Détails</button>
                     <button type="button" class="btn btn-warning">Modifier</button>
                     <button type="button" class="btn btn-danger">Effacer</button>
+                    
                 </div>
             </div>
             <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -55,6 +61,37 @@ function readToDoPosts(data){
     }
 }  
 
-
-
 updateView();
+
+
+//Récupère le bouton d'envoi et les contenus des inputs.
+
+let $titleToDo = document.getElementById('titleField').value;
+let $contentToDo = document.getElementById('contentField').value;
+const data = {'title' : $titleToDo, 'content' : $contentToDo};
+const $createToDo = document.getElementById('toDo');
+
+$createToDo.addEventListener('click', ev => createToDo(data));
+
+function createToDo(data){
+    fetch('http://localhost:3000/api/v1/todos', {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+    })
+    .then((response) => response.json())
+    .then((result) => {
+        console.log('Success:', result);
+        
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+
+}
+updateView(data);
+
+$titleToDo = " ";
+$contentToDo = " ";
