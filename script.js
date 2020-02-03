@@ -3,7 +3,7 @@ const removeSVG = '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:x
 const completeSVG = '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 22 22" style="enable-background:new 0 0 22 22;" xml:space="preserve"><rect y="0" class="noFill" width="22" height="22"/><g><path class="fill" d="M9.7,14.4L9.7,14.4c-0.2,0-0.4-0.1-0.5-0.2l-2.7-2.7c-0.3-0.3-0.3-0.8,0-1.1s0.8-0.3,1.1,0l2.1,2.1l4.8-4.8c0.3-0.3,0.8-0.3,1.1,0s0.3,0.8,0,1.1l-5.3,5.3C10.1,14.3,9.9,14.4,9.7,14.4z"/></g></svg>';
 
 function updateView(){
-    fetch('http://localhost:3000/api/v1/todos/?limit=300', {
+    fetch('http://localhost:3000/api/v1/todos/?limit=3&offset=0', {
         method: 'GET'
     })    
     .then(res => res.json())
@@ -21,11 +21,11 @@ function readToDoPosts(data){
     for(let toDo of data){
                      
         html +=`
-            <div class="card my-2 rounded" id="addBorder">
+            <div class="card my-2 rounded" id="addBorder${toDo.id}">
                 <div class="card-body">
                     <p>ToDO n° ${toDo.id} </p>
                     <p class="text-right">Date de création: ${new Date(toDo.createdAt).toLocaleDateString()}</p>
-                    <h4 class="card-title bg-info">${toDo.title}</h4>
+                    <h4 class="card-title bg-info" data-toggle="modal" data-target="#exampleModal${toDo.id}">${toDo.title}</h4>
                     <div class="text-left">
                         <input dataCheck-id="${toDo.id}" type="checkbox" value="" id="defaultCheck${toDo.id}" ${stateCheckBox(toDo.done)}>
                         <label for="defaultCheck${toDo.id}">
@@ -91,9 +91,7 @@ function readToDoPosts(data){
             </div>
         </div>
 `;  
-
 }
-
 $postsList.innerHTML = html;
 }  
 
@@ -102,13 +100,12 @@ $postsList.innerHTML = html;
 const $createToDo = document.getElementById('toDoAdd');
 
 $createToDo.addEventListener('click', ev => { 
-    let $titleToDo = document.getElementById('titleField').value;
-    let $contentToDo = document.getElementById('contentField').value;
-        const data = {'title' : $titleToDo, 'content' : $contentToDo};
-        
-        createToDo(data);
-    document.getElementById('titleField').value = "";
-    document.getElementById('contentField').value = "";
+    let $titleToDo = document.getElementById('titleField');
+    let $contentToDo = document.getElementById('contentField');
+    const data = {'title' : $titleToDo.value, 'content' : $contentToDo.value};
+    createToDo(data);
+    $contentToDo.value = "";
+    $titleToDo.value = "";
 });
 
 function createToDo(data){
@@ -136,7 +133,7 @@ document.addEventListener('click', function (e) {
     if ($target.hasAttribute("dataDelete-id")) {
         e.preventDefault();
         e.stopPropagation();
-      const $id = Number($target.getAttribute("dataDelete-id"));
+        const $id = Number($target.getAttribute("dataDelete-id"));
         deleteToDo($id);
     }
 });
@@ -157,16 +154,15 @@ function deleteToDo($id){
 
 document.addEventListener('click', function (e) {
     const $target = e.target;
-    
 
     if ($target.hasAttribute("dataUpdate-id")) {
         e.preventDefault();
         e.stopPropagation();
-      let $id = Number($target.getAttribute("dataUpdate-id"));
-      let $titleUpdateToDo = document.getElementById(`exampleInputUpdateToDo${$id}`).value;
-      let $contentUpdateToDo = document.getElementById(`contentUpdate${$id}`).value;
-      const updateData = {'title' : $titleUpdateToDo, 'content' : $contentUpdateToDo};
-      updateToDo($id, updateData);
+        let $id = Number($target.getAttribute("dataUpdate-id"));
+        let $titleUpdateToDo = document.getElementById(`exampleInputUpdateToDo${$id}`).value;
+        let $contentUpdateToDo = document.getElementById(`contentUpdate${$id}`).value;
+        const updateData = {'title' : $titleUpdateToDo, 'content' : $contentUpdateToDo};
+        updateToDo($id, updateData);
     }
 });
 
@@ -191,18 +187,23 @@ function updateToDo($id, updateData){
 
 document.addEventListener('click', function (e) {
     const $target = e.target;
-    if ($target.hasAttribute("dataCheck-id") && !$target.hasAttribute('checked')) {
-      let $id = Number($target.getAttribute('dataCheck-id'));
-      let updateCheckData = {'done' : true};
-    //   let addBorder = document.getElementById("addBorder");
-    //   addBorder.classList.add("border-success");
-      updateCheckToDo($id, updateCheckData);
+    
+    if ($target.hasAttribute("dataCheck-id")){
+        e.preventDefault();
+        e.stopPropagation();
+        if($target.checked) {
+            let $id = Number($target.getAttribute('dataCheck-id'));
+            let updateCheckData = {'done' : true};
+            let addBorder = document.getElementById(`addBorder${$id}`);
+            addBorder.classList.add('bg-success');
+            updateCheckToDo($id, updateCheckData);
 
-    }else {
-        $id = Number($target.getAttribute('dataCheck-id'));
-        updateCheckData = {'done' : false};
-        $target.setAttribute("value", "");
-        updateCheckToDo($id, updateCheckData);
+        }else {
+            $id = Number($target.getAttribute('dataCheck-id'));
+            updateCheckData = {'done' : false};
+            // $target.setAttribute("value", "");
+            updateCheckToDo($id, updateCheckData);
+        }
     }
 });
 
@@ -225,12 +226,55 @@ function updateCheckToDo($id, updateCheckData){
 
 
 }
+
 const stateCheckBox = (state) => {
     if (state) {
         return "checked";
     } else {
         return "";
     }
+}
+
+fetch('http://localhost:3000/api/v1/todos/count'){
+    
+}
+
+let $page = 0;
+let nPerPage = 3;
+let minPage = 0;
+let maxPage = 
+
+$pageIncrease = document.getElementById('pageIncrease');
+$pageDecrease = document.getElementById('pageDecrease');
+
+$pageIncrease.addEventListener('click', increaseToDo);
+$pageDecrease.addEventListener('click', decreaseToDo);
+
+function increaseToDo(){
+    $page++;
+    updateLoadView($page);
+};
+
+function decreaseToDo(){
+    $page--;
+    if(($page*nPerPage) == 0){
+        let currentPAge = document.getElementById('decrease');
+        currentPAge.classList.add('disabled');
+        minPage;
+    }
+       
+    
+    updateLoadView($page);
+}
+
+
+function updateLoadView($page){
+    fetch(`http://localhost:3000/api/v1/todos/?limit=${nPerPage}&offset=${$page*nPerPage}`, {
+        method: 'GET'
+    })    
+    .then(res => res.json())
+    .then(data => readToDoPosts(data))
+    .catch(err => handleError(err));
 }
 
 updateView();
