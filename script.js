@@ -242,13 +242,14 @@ const count = fetch('http://localhost:3000/api/v1/todos/count')
 let $page = 0;
 let nPerPage = 3;
 let minPage = 0;
-let maxPage = count.count/nPerPage;
+let maxPage = count.value / nPerPage;
 
 $pageIncrease = document.getElementById('pageIncrease');
 $pageDecrease = document.getElementById('pageDecrease');
 
 $pageIncrease.addEventListener('click', increaseToDo);
 $pageDecrease.addEventListener('click', decreaseToDo);
+
 
 function increaseToDo(){
     $page++;
@@ -270,8 +271,6 @@ function decreaseToDo(){
         currentPAge.classList.add('disabled');
         minPage;
     }
-       
-    
     updateLoadView($page);
 }
 
