@@ -187,19 +187,22 @@ document.addEventListener('click', function (e) {
     const $target = e.target;
     
     if ($target.hasAttribute("dataCheck-id")){
-        e.preventDefault();
+        // e.preventDefault();
+        let $id = Number($target.getAttribute('dataCheck-id'));
+        let addBorder = document.getElementById(`addBorder${$id}`);
         e.stopPropagation();
         if($target.checked) {
-            let $id = Number($target.getAttribute('dataCheck-id'));
             let updateCheckData = {'done' : true};
-            let addBorder = document.getElementById(`addBorder${$id}`);
-            addBorder.classList.add('bg-success');
+            // let addBorder = document.getElementById(`addBorder${$id}`);
+            addBorder.classList.toggle('bg-success', true);
             updateCheckToDo($id, updateCheckData);
 
         }else {
-            $id = Number($target.getAttribute('dataCheck-id'));
+            // $id = Number($target.getAttribute('dataCheck-id'));
             updateCheckData = {'done' : false};
             // $target.setAttribute("value", "");
+
+            addBorder.classList.toggle('bg-success', false);
             updateCheckToDo($id, updateCheckData);
         }
     }
